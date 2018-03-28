@@ -26,13 +26,12 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 public class ExcelWriter {
 
 	static int rowCount;
-
 	static Workbook workbook = null;
-
 	static Sheet sheet = null;
-
 	static FileOutputStream outputStream = null;
-
+	static String excelSheetPath = System.getProperty("user.dir")+"/Reports/Automation_Status.xlsx";
+	static String propertyFilePath = System.getProperty("user.dir")+"/Resource/excelColumnName.properties";
+	
 	public static void main(String[] args) {
 
 		createExcelFile();
@@ -46,22 +45,10 @@ public class ExcelWriter {
 		try {
 			writeDataIntoExcel("testCaseName1", "action", "label", "isSuccess", "statusFailOrPass", "exception",
 					"screenShotStatus", "screenShotPath", startTime, endTime, timeStamp);
-			writeDataIntoExcelSheet();
+			
 			writeDataIntoExcel("testCaseName2", "action2", "label2", "isSuccess2", "statusFailOrPass2", "exception2",
 					"screenShotStatus2", "screenShotPath2", startTime, endTime, timeStamp);
-			writeDataIntoExcelSheet();
-			writeDataIntoExcel("testCaseName3", "action2", "label2", "isSuccess2", "statusFailOrPass2", "exception2",
-					"screenShotStatus2", "screenShotPath2", startTime, endTime, timeStamp);
-			writeDataIntoExcelSheet();
-			writeDataIntoExcel("testCaseName4", "action2", "label2", "isSuccess2", "statusFailOrPass2", "exception2",
-					"screenShotStatus2", "screenShotPath2", startTime, endTime, timeStamp);
-			writeDataIntoExcelSheet();
-			writeDataIntoExcel("testCaseName5", "action2", "label2", "isSuccess2", "statusFailOrPass2", "exception2",
-					"screenShotStatus2", "screenShotPath2", startTime, endTime, timeStamp);
-			writeDataIntoExcelSheet();
-			writeDataIntoExcel("testCaseName6", "action2", "label2", "isSuccess2", "statusFailOrPass2", "exception2",
-					"screenShotStatus2", "screenShotPath2", startTime, endTime, timeStamp);
-			writeDataIntoExcelSheet();
+						
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -90,13 +77,12 @@ public class ExcelWriter {
 		Properties prop = new Properties();
 		InputStream input = null;
 		try {
-			input = new FileInputStream("excelColumnName.properties");
+			input = new FileInputStream(propertyFilePath);
 			prop.load(input);
 			System.out.println(prop.getProperty("isSuccess"));
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		} finally {
-
 			if (input != null) {
 				try {
 					input.close();
@@ -152,15 +138,29 @@ public class ExcelWriter {
 
 		try {
 			if (outputStream != null) {
-				File file = new File("Automation_Status.xlsx");
+				File file = new File(excelSheetPath);
 				FileInputStream fileInputStream = new FileInputStream(file);
 				workbook = new XSSFWorkbook(fileInputStream);
 				sheet = workbook.getSheetAt(0);
 			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
+		}finally{
+			try {
+				outputStream = new FileOutputStream(excelSheetPath);
+				workbook.write(outputStream);
+				workbook.close();
+			} catch (IOException e) {				
+				e.printStackTrace();
+			}
 		}
+	}
 
+	public static void assignCellValueIntoExcel(String testCaseName, String action, String label, String isSuccess,
+			String statusFailOrPass, String exception, String screenShotStatus, String screenShotPath, String startTime,
+			String endTime, Long timeStamp) {
+		
 		int rowCount = sheet.getLastRowNum();
 		Row row = sheet.createRow(++rowCount);
 		int columnCount = 0;
@@ -186,6 +186,7 @@ public class ExcelWriter {
 		cell.setCellValue(endTime);
 		cell = row.createCell(10);
 		cell.setCellValue(timeStamp);
+		
 		int numberOfSheets = workbook.getNumberOfSheets();
 
 		for (int i = 0; i < numberOfSheets; i++) {
@@ -199,20 +200,7 @@ public class ExcelWriter {
 					sheet.autoSizeColumn(columnIndex);
 				}
 			}
-		}
-
+		}		
 	}
-
-	public static void writeDataIntoExcelSheet() {
-		try {
-			outputStream = new FileOutputStream("Automation_Status.xlsx");
-			workbook.write(outputStream);
-			workbook.close();
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
-
+	
 }
